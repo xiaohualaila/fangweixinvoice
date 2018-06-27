@@ -5,6 +5,7 @@ import android.graphics.drawable.AnimationDrawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,8 @@ import android.widget.TextView;
 
 import com.example.admin.fangweixinvoice.view.MediaManager;
 import com.example.admin.fangweixinvoice.view.Recorder;
+
+import java.io.File;
 
 
 public class SecondActivity extends AppCompatActivity {
@@ -26,16 +29,13 @@ public class SecondActivity extends AppCompatActivity {
     private RelativeLayout rl_play_voice;
     private View mAnimView;
     private String voice_path;
+    private boolean isHaveVoice = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_second);
 
-        WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        wm.getDefaultDisplay().getMetrics(displayMetrics);
-        mMaxItemWidth = (int) (displayMetrics.widthPixels*0.7f);
-        mMinItemWidth = (int) (displayMetrics.widthPixels*0.15f);
+        getItemWidth();
         rl_play_voice = findViewById(R.id.rl_play_voice);
         seconds = findViewById(R.id.id_recorder_time);
         length = findViewById(R.id.id_recorder_length);
@@ -48,6 +48,8 @@ public class SecondActivity extends AppCompatActivity {
                 dialogView.setCallBackVoice(new ButtomDialogView.CallBackVoice() {
                     @Override
                     public void backData(Recorder recorder) {
+                        isHaveVoice = true;
+                        rl_play_voice.setVisibility(View.VISIBLE);
                         voice_path =recorder.getFilePath();
                         seconds.setText(Math.round(recorder.getTime())+"\"");
                         ViewGroup.LayoutParams lp = length.getLayoutParams();
@@ -79,6 +81,23 @@ public class SecondActivity extends AppCompatActivity {
 
     }
 
+    private void getItemWidth() {
+        WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        wm.getDefaultDisplay().getMetrics(displayMetrics);
+        mMaxItemWidth = (int) (displayMetrics.widthPixels*0.7f);
+        mMinItemWidth = (int) (displayMetrics.widthPixels*0.15f);
+    }
+
+    private void deleteVoiceFile(){
+        if(!TextUtils.isEmpty(voice_path)){
+            File file = new File(voice_path);
+            if(file != null){
+                file.delete();
+            }
+        }
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -95,5 +114,6 @@ public class SecondActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         MediaManager.release();
+        deleteVoiceFile();
     }
 }
